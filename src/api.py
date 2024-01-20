@@ -1,8 +1,17 @@
-from flask import Flask
+import flask
 from werkzeug.middleware.proxy_fix import ProxyFix
+from modules import webhooks_inbound
 
-app = Flask(__name__)
 
-@app.route("/up")
+app = flask.Flask(__name__)
+
+
+@app.route("/up", methods = ["GET"])
 def up():
   return {"status": "healthy"}, 200
+
+
+@app.route("/", methods = ["POST"])
+def webhooks():
+  response = webhooks_inbound.process(flask.request)
+  return response
