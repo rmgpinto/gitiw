@@ -1,3 +1,4 @@
+import os
 import redis
 
 
@@ -9,4 +10,4 @@ def client():
 
 
 def init():
-  globals()["REDIS_CLIENT"] = redis.Redis(host="redis", port=6379)
+  globals()["REDIS_CLIENT"] = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379)
