@@ -6,7 +6,7 @@ variable "region" {
   description = "Google region"
 }
 
-variable "version" {
+variable "redis_version" {
   description = "Redis version"
 }
 
