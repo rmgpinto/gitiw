@@ -40,9 +40,11 @@ def validate_payload(payload):
 
 
 def process(request):
-  if not validate_schema(request):
+  is_valid_schema = validate_schema(request):
+  if not is_valid_schema:
     return {"message": "Invalid JSON schema."}, 400
   payload = request.get_json()
-  if not validate_payload(payload):
+  is_valid_payload = validate_payload(payload)
+  if not is_valid_payload:
     return {"message": "Invalid JSON payload."}, 400
   return {"message": "Webhook accepted."}, 200
