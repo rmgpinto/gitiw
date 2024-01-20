@@ -40,7 +40,7 @@ def validate_payload(payload):
 
 
 def process(request):
-  is_valid_schema = validate_schema(request):
+  is_valid_schema = validate_schema(request)
   if not is_valid_schema:
     return {"message": "Invalid JSON schema."}, 400
   payload = request.get_json()
