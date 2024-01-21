@@ -42,7 +42,7 @@ def validate_payload(payload):
 
 
 def send_webhook_to_stream(payload):
-  response = redis_client.send_webhook_to_stream("webhooks", { "payload": json.dumps(payload) })
+  response = redis_client.send_webhook_to_stream({ "payload": json.dumps(payload) })
   return response
 
 

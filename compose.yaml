@@ -7,6 +7,7 @@ services:
       - "8000:8000"
     environment:
       - REDIS_HOST=redis
+      - REDIS_STREAM=webhooks
     depends_on:
       - redis
   delivery:
@@ -15,6 +16,8 @@ services:
       dockerfile: Dockerfile.delivery
     environment:
       - REDIS_HOST=redis
+      - REDIS_STREAM=webhooks
+      - REDIS_CONSUMER_GROUP=webhooks-consumer-group
     depends_on:
       - redis
       - api

@@ -14,8 +14,8 @@ def client():
   return globals()["REDIS_CLIENT"]
 
 
-def send_webhook_to_stream(stream, payload):
-  response = client().xadd(stream, payload)
+def send_webhook_to_stream(payload):
+  response = client().xadd(os.getenv("REDIS_STREAM"), payload)
   if type(response) == str and len(response.split("-")) == 2:
     return True
   else:
@@ -24,7 +24,7 @@ def send_webhook_to_stream(stream, payload):
 
 def create_consumer_group():
   try:
-    client().xgroup_create("webhooks", "webhooks-consumer-group", 0, mkstream=True)
+    client().xgroup_create(os.getenv("REDIS_STREAM"), os.getenv("REDIS_CONSUMER_GROUP"), 0, mkstream=True)
   except Exception as e:
     if e.args[0] == "BUSYGROUP Consumer Group name already exists":
       pass
@@ -34,13 +34,13 @@ def create_consumer_group():
 
 def get_webhooks_from_stream():
   messages = client().xreadgroup(
-      groupname="webhooks-consumer-group",
+      groupname=os.getenv("REDIS_CONSUMER_GROUP"),
       consumername=socket.gethostname(),
-      streams={"webhooks": ">"}
+      streams={os.getenv("REDIS_STREAM"): ">"}
   )
   return messages
 
 
 def delete_webhook_from_stream(webhook_id):
-  client().xack("webhooks", "webhooks-consumer-group", webhook_id)
-  client().xdel("webhooks", webhook_id)
+  client().xack(os.getenv("REDIS_STREAM"), os.getenv("REDIS_CONSUMER_GROUP"), webhook_id)
+  client().xdel(os.getenv("REDIS_STREAM"), webhook_id)
