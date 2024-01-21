@@ -5,19 +5,19 @@ services:
       dockerfile: Dockerfile.api
     ports:
       - "8000:8000"
-    environment:
+    environment: &environment
       - REDIS_HOST=redis
       - REDIS_STREAM=webhooks
+      - REDIS_DLQ_STREAM=webhooks-dlq
+      - REDIS_CONSUMER_GROUP=webhooks-consumer-group
+      - REDIS_DLQ_CONSUMER_GROUP=webhooks-dlq-consumer-group
     depends_on:
       - redis
   delivery:
     build:
       context: .
       dockerfile: Dockerfile.delivery
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_STREAM=webhooks
-      - REDIS_CONSUMER_GROUP=webhooks-consumer-group
+    environment: *environment
     depends_on:
       - redis
       - api

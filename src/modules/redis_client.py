@@ -22,6 +22,14 @@ def send_webhook_to_stream(payload):
     return False
 
 
+def send_webhook_to_dlq_stream(payload):
+  response = client().xadd(os.getenv("REDIS_DLQ_STREAM"), payload)
+  if type(response) == str and len(response.split("-")) == 2:
+    return True
+  else:
+    return False
+
+
 def create_consumer_group():
   try:
     client().xgroup_create(os.getenv("REDIS_STREAM"), os.getenv("REDIS_CONSUMER_GROUP"), 0, mkstream=True)
