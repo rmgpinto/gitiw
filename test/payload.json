@@ -7,6 +7,7 @@
   "event-data": {
     "event": "opened",
     "timestamp": 1529006854.329574,
-    "id": "DACSsAdVSeGpLid7TN03WA"
+    "id": "DACSsAdVSeGpLid7TN03WA",
+    "client-id": "1"
   }
 }

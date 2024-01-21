@@ -22,8 +22,20 @@ services:
       - redis
       - api
   redis:
-    image: "redis:alpine"
-  echoserver:
+    image: redis:alpine
+  echoserver-1: &echoserver
     image: nginx
     depends_on:
       - delivery
+  echoserver-2: *echoserver
+  redis-init:
+    image: redis:alpine
+    # add backend server mappings to echoservers
+    command:
+      - sh
+      - -c
+      - |
+        redis-cli -h redis set "backend:1" "echoserver-1"
+        redis-cli -h redis set "backend:2" "echoserver-2"
+    depends_on:
+      - redis

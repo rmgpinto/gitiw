@@ -41,6 +41,11 @@ def get_webhooks_from_stream():
   return messages
 
 
+def get_backend_server(client_id):
+  server = client().get(f"backend:{client_id}")
+  return server
+
+
 def delete_webhook_from_stream(webhook_id):
   client().xack(os.getenv("REDIS_STREAM"), os.getenv("REDIS_CONSUMER_GROUP"), webhook_id)
   client().xdel(os.getenv("REDIS_STREAM"), webhook_id)
