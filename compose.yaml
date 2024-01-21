@@ -1,9 +1,26 @@
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     ports:
       - "8000:8000"
     environment:
       - REDIS_HOST=redis
+    depends_on:
+      - redis
+  delivery:
+    build:
+      context: .
+      dockerfile: Dockerfile.delivery
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - api
   redis:
     image: "redis:alpine"
+  echoserver:
+    image: nginx
+    depends_on:
+      - delivery
