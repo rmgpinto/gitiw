@@ -14,3 +14,13 @@ def send_webhook(webhook):
       return False
   except Exception as e:
     return False
+
+
+def send_webhook_exponential_backoff(webhook):
+  retry = 0
+  while retry <= 5:
+    webhook_sent = webhooks_delivery.send_webhook(payload)
+    if not webhook_sent:
+      sleep = (5 * 2 ** retry + random.uniform(0, 1))
+      time.sleep(sleep)
+      retry += 1

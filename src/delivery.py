@@ -1,6 +1,9 @@
 from modules import redis_client
 from modules import webhooks_delivery
 import json
+import os
+import random
+import time
 
 
 if __name__ == "__main__":
@@ -15,4 +18,7 @@ if __name__ == "__main__":
         webhook_id = webhook[1][0][0]
         redis_client.delete_webhook_from_stream(webhook_id)
       else:
-        redis_client.send_webhook_to_dlq_stream({ "payload": json.dumps(payload) })
+        if not os.getenv("DELIVERY_DLQ"):
+          redis_client.send_webhook_to_dlq_stream({ "payload": json.dumps(payload) })
+        else:
+          webhooks_delivery.send_webhook_exponential_backoff(payload)

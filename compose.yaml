@@ -21,6 +21,20 @@ services:
     depends_on:
       - redis
       - api
+  delivery-dlq:
+    build:
+      context: .
+      dockerfile: Dockerfile.delivery
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_STREAM=webhooks
+      - REDIS_DLQ_STREAM=webhooks-dlq
+      - REDIS_CONSUMER_GROUP=webhooks-consumer-group
+      - REDIS_DLQ_CONSUMER_GROUP=webhooks-dlq-consumer-group
+      - DELIVERY_DLQ=true
+    depends_on:
+      - redis
+      - api
   redis:
     image: redis:alpine
   echoserver-1: &echoserver
