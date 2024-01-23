@@ -2,8 +2,6 @@ from modules import redis_client
 from modules import webhooks_delivery
 import json
 import os
-import random
-import time
 
 
 if __name__ == "__main__":
