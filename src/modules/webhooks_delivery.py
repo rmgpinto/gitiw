@@ -20,9 +20,11 @@ def send_webhook(webhook):
 
 def send_webhook_exponential_backoff(webhook):
   retry = 0
-  while retry <= 5:
-    webhook_sent = webhooks_delivery.send_webhook(payload)
+  webhook_sent = False
+  while retry <= 3 and not webhook_sent:
+    webhook_sent = send_webhook(webhook)
     if not webhook_sent:
       sleep = (5 * 2 ** retry + random.uniform(0, 1))
       time.sleep(sleep)
       retry += 1
+  return webhook_sent

@@ -5,42 +5,36 @@ services:
       dockerfile: Dockerfile.api
     ports:
       - "8000:8000"
-    environment: &environment
+    environment:
       - REDIS_HOST=redis
       - REDIS_STREAM=webhooks
-      - REDIS_DLQ_STREAM=webhooks-dlq
-      - REDIS_CONSUMER_GROUP=webhooks-consumer-group
-      - REDIS_DLQ_CONSUMER_GROUP=webhooks-dlq-consumer-group
     depends_on:
       - redis
   delivery:
     build:
       context: .
       dockerfile: Dockerfile.delivery
-    environment: *environment
+    environment: &environment
+      - REDIS_HOST=redis
+      - REDIS_STREAM=webhooks
+      - REDIS_CONSUMER_GROUP=webhooks-consumer-group
     depends_on:
       - redis
       - api
-  delivery-dlq:
+      - echoserver-1
+      - echoserver-2
+  delivery-pending:
     build:
       context: .
       dockerfile: Dockerfile.delivery
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_STREAM=webhooks
-      - REDIS_DLQ_STREAM=webhooks-dlq
-      - REDIS_CONSUMER_GROUP=webhooks-consumer-group
-      - REDIS_DLQ_CONSUMER_GROUP=webhooks-dlq-consumer-group
-      - DELIVERY_DLQ=true
+    command: ["python3", "delivery_pending.py"]
+    environment: *environment
     depends_on:
       - redis
-      - api
   redis:
     image: redis:alpine
   echoserver-1: &echoserver
     image: nginx
-    depends_on:
-      - delivery
   echoserver-2: *echoserver
   redis-init:
     image: redis:alpine

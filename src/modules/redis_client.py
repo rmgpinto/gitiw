@@ -1,6 +1,7 @@
 import os
 import redis
 import socket
+import time
 
 
 REDIS_CLIENT = None
@@ -22,17 +23,9 @@ def send_webhook_to_stream(payload):
     return False
 
 
-def send_webhook_to_dlq_stream(payload):
-  response = client().xadd(os.getenv("REDIS_DLQ_STREAM"), payload)
-  if type(response) == str and len(response.split("-")) == 2:
-    return True
-  else:
-    return False
-
-
 def create_consumer_group():
   try:
-    client().xgroup_create(os.getenv("REDIS_STREAM") or os.getenv("REDIS_DLQ_STREAM"), os.getenv("REDIS_CONSUMER_GROUP") or os.getenv("REDIS_DLQ_CONSUMER_GROUP"), 0, mkstream=True)
+    client().xgroup_create(os.getenv("REDIS_STREAM"), os.getenv("REDIS_CONSUMER_GROUP"), 0, mkstream=True)
   except Exception as e:
     if e.args[0] == "BUSYGROUP Consumer Group name already exists":
       pass
@@ -41,11 +34,14 @@ def create_consumer_group():
 
 
 def get_webhooks_from_stream():
-  messages = client().xreadgroup(
-      groupname=os.getenv("REDIS_CONSUMER_GROUP") or os.getenv("REDIS_DLQ_CONSUMER_GROUP"),
+  group_messages = client().xreadgroup(
+      groupname=os.getenv("REDIS_CONSUMER_GROUP"),
       consumername=socket.gethostname(),
-      streams={os.getenv("REDIS_STREAM") or os.getenv("REDIS_DLQ_STREAM"): ">"}
+      streams={os.getenv("REDIS_STREAM"): ">"}
   )
+  messages = []
+  for message in group_messages:
+    messages.append(message[1][0])
   return messages
 
 
@@ -55,5 +51,35 @@ def get_backend_server(client_id):
 
 
 def delete_webhook_from_stream(webhook_id):
-  client().xack(os.getenv("REDIS_STREAM") or os.getenv("REDIS_DLQ_STREAM"), os.getenv("REDIS_CONSUMER_GROUP") or os.getenv("REDIS_DLQ_CONSUMER_GROUP"), webhook_id)
-  client().xdel(os.getenv("REDIS_STREAM") or os.getenv("REDIS_DLQ_STREAM"), webhook_id)
+  client().xack(os.getenv("REDIS_STREAM"), os.getenv("REDIS_CONSUMER_GROUP"), webhook_id)
+  client().xdel(os.getenv("REDIS_STREAM"), webhook_id)
+
+
+def get_pending_webhooks_from_stream(min_idle_time):
+  pending_messages = client().xpending(
+    name=os.getenv("REDIS_STREAM"),
+    groupname=os.getenv("REDIS_CONSUMER_GROUP")
+  )
+  messages = []
+  if pending_messages["pending"] > 0:
+    min_pending_webhook_ts = int(pending_messages["min"].split("-")[0])
+    webhook_age = (time.time() * 1000 - min_pending_webhook_ts)
+    if webhook_age >= min_idle_time:
+      pending_messages = client().xrange(
+        name=os.getenv("REDIS_STREAM"),
+        min=pending_messages["min"],
+        max=pending_messages["min"]
+      )
+      if pending_messages:
+        messages.append(pending_messages[0])
+  return messages
+
+
+def claim_pending_webhooks_from_stream(min_idle_time):
+  messages = client().xautoclaim(
+    name=os.getenv("REDIS_STREAM"),
+    groupname=os.getenv("REDIS_CONSUMER_GROUP"),
+    consumername=socket.gethostname(),
+    min_idle_time=min_idle_time
+  )
+  return messages[1]
