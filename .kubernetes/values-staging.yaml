@@ -1,0 +1,26 @@
+api:
+  image:
+    repository: ghcr.io/rmgpinto/gitiw-api
+    tag: 203b136c95ceef982edc66d355cdd78781a00212
+    pullPolicy: IfNotPresent
+  env:
+    - name: REDIS_HOST
+      value: "10.3.32.67"
+    - name: REDIS_STREAM
+      value: webhooks
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  service:
+    type: LoadBalancer
+    targetPort: 8000
+    port: 80
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
