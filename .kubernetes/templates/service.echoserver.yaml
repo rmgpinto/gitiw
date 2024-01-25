@@ -1,16 +1,19 @@
+{{- range $i := until (int .Values.echoserver.replicaCount) }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: echoserver
+  name: echoserver-{{ add $i 1 }}
   labels:
-    {{- include "gitiw.labels" . | nindent 4 }}
+    {{- include "gitiw.labels" $ | nindent 4 }}
 spec:
-  type: {{ .Values.echoserver.service.type }}
+  type: {{ $.Values.echoserver.service.type }}
   ports:
-    - port: {{ .Values.echoserver.service.port }}
-      targetPort: {{ .Values.echoserver.service.port }}
+    - port: {{ $.Values.echoserver.service.port }}
+      targetPort: {{ $.Values.echoserver.service.port }}
       protocol: TCP
       name: http
   selector:
-    {{- include "gitiw.selectorLabels" . | nindent 4 }}
-    role: echoserver
+    {{- include "gitiw.selectorLabels" $ | nindent 4 }}
+    statefulset.kubernetes.io/pod-name: echoserver-{{ $i }}
+---
+{{- end }}
