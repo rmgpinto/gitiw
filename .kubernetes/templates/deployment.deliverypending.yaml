@@ -22,7 +22,7 @@ spec:
           image: "{{ .Values.delivery.image.repository }}:{{ .Values.delivery.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.deliveryPending.image.pullPolicy }}
           command:
-            {{- toYaml .Values.command | nindent 12 }}
+            {{- toYaml .Values.deliveryPending.command | nindent 12 }}
           {{- with .Values.deliveryPending.env }}
           env:
             {{- toYaml . | nindent 12 }}
