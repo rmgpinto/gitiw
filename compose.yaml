@@ -21,8 +21,8 @@ services:
     depends_on:
       - redis
       - api
+      - echoserver-0
       - echoserver-1
-      - echoserver-2
   delivery-pending:
     build:
       context: .
@@ -33,9 +33,9 @@ services:
       - redis
   redis:
     image: redis:alpine
-  echoserver-1: &echoserver
+  echoserver-0: &echoserver
     image: nginx
-  echoserver-2: *echoserver
+  echoserver-1: *echoserver
   redis-init:
     image: redis:alpine
     # add backend server mappings to echoservers
@@ -43,8 +43,8 @@ services:
       - sh
       - -c
       - |
+        redis-cli -h redis set "backend:0" "echoserver-0"
         redis-cli -h redis set "backend:1" "echoserver-1"
-        redis-cli -h redis set "backend:2" "echoserver-2"
     depends_on:
       - redis
   redis-stream-stats:
