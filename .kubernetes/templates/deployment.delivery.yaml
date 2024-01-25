@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitiw.fullname" . }}-delivery
+  labels:
+    {{- include "gitiw.labels" . | nindent 4 }}
+    role: delivery
+spec:
+  replicas: {{ .Values.delivery.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "gitiw.selectorLabels" . | nindent 6 }}
+      role: delivery
+  template:
+    metadata:
+      labels:
+        {{- include "gitiw.labels" . | nindent 8 }}
+        role: delivery
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-delivery
+          image: "{{ .Values.delivery.image.repository }}:{{ .Values.delivery.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.delivery.image.pullPolicy }}
+          {{- with .Values.delivery.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.delivery.resources | nindent 12 }}
