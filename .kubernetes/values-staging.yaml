@@ -24,3 +24,15 @@ api:
     minReplicas: 1
     maxReplicas: 4
     targetCPUUtilizationPercentage: 80
+echoserver:
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    port: 80

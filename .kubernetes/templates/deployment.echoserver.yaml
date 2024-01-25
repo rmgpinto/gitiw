@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoserver
+spec:
+  replicas: {{ .Values.echoserver.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "gitiw.labels" . | nindent 6 }}
+      role: echoserver
+  template:
+    metadata:
+      labels:
+        {{- include "gitiw.labels" . | nindent 8 }}
+        role: echoserver
+    spec:
+      containers:
+        - name: echoserver
+          image: nginx:alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.echoserver.resources | nindent 12 }}
