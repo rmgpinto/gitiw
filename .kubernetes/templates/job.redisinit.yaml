@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redis-init
+  labels:
+    {{- include "gitiw.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: redis-init
+          image: redis:alpine
+          command:
+            - sh
+            - -c
+            - |
+              {{- range $i := until (int .Values.echoserver.replicaCount) }}
+              redis-cli -h ${REDIS_HOST} set "backend:{{ $i }}" "echoserver-{{ $i}}"
+              {{- end }}
+          {{- with .Values.api.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
