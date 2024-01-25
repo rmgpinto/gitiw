@@ -60,7 +60,7 @@ services:
         while true; do
           sleep 5
           export REDIS_XLEN=$$(redis-cli -h $${REDIS_HOST} --raw XLEN $${REDIS_STREAM})
-          export REDIS_XPENDING=$$(redis-cli -h redis --raw XPENDING $${REDIS_STREAM} $${REDIS_CONSUMER_GROUP} | head -n 1)
+          export REDIS_XPENDING=$$(redis-cli -h $${REDIS_HOST} --raw XPENDING $${REDIS_STREAM} $${REDIS_CONSUMER_GROUP} | head -n 1)
           echo "webhooks: $${REDIS_XLEN}"
           echo "webhooks-pending: $${REDIS_XPENDING}"
         done
