@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-queue-stats
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "gitiw.labels" . | nindent 6 }}
+      role: redis-queue-stats
+  template:
+    metadata:
+      labels:
+        {{- include "gitiw.labels" . | nindent 8 }}
+        role: redis-queue-stats
+    spec:
+      containers:
+        - name: redis-queue-stats
+          image: redis:alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                sleep 5
+                export REDIS_XLEN=$(redis-cli -h ${REDIS_HOST} --raw XLEN ${REDIS_STREAM})
+                export REDIS_XPENDING=$(redis-cli -h ${REDIS_HOST} --raw XPENDING ${REDIS_STREAM} ${REDIS_CONSUMER_GROUP} | head -n 1)
+                echo "webhooks: ${REDIS_XLEN}"
+                echo "webhooks-pending: ${REDIS_XPENDING}"
+              done
+          {{- with .Values.delivery.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
