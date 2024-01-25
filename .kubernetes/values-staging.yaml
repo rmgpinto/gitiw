@@ -44,6 +44,31 @@ delivery:
     limits:
       cpu: 250m
       memory: 256Mi
+deliveryPending:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/rmgpinto/gitiw-delivery
+    tag: 203b136c95ceef982edc66d355cdd78781a00212
+    pullPolicy: IfNotPresent
+  command:
+    - bash
+    - -c
+    - |
+      sleep 999
+  env:
+    - name: REDIS_HOST
+      value: "10.3.32.67"
+    - name: REDIS_STREAM
+      value: webhooks
+    - name: REDIS_CONSUMER_GROUP
+      value: webhooks-consumer-group
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
 echoserver:
   replicaCount: 2
   resources:
